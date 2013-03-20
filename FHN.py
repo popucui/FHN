@@ -68,6 +68,9 @@ def submit():
 			db.urls.insert(url)
 			return redirect(url_for('show_entries'))
 
+# MongoDB 数据库为 fhn，有两个 collection，users 和 urls。
+# urls 里的文档暂定这样：
+# 看来需要加上 submit_time 字段。
 entry_1 = { "url" : "http://blog.devep.net/virushuo/2013/03/19/googlereader.html",
             "title" : "Google的社会化梦想与Reader".decode("utf8"),
             "submitter" : "yfaming",
@@ -85,4 +88,4 @@ entry_2 = { "url" : "https://github.com/Yixiaohan/codeparkshare",
 
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run(debug=True, host='0.0.0.0', port=80)
