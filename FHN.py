@@ -1,5 +1,5 @@
 # -*- coding=UTF-8 -*-
-from flask import Flask, request, session, g, redirect, abort, render_template
+from flask import Flask, request, session, g, redirect, abort, render_template, url_for
 from pymongo import Connection
 
 # configuration
@@ -25,6 +25,27 @@ def show_entries():
 	entries = [ e for e in db.urls.find().limit(50)]
 	return render_template('index.html', entries=enumerate(entries))
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+	db = g.conn.fhn
+	error = None
+	if request.method == 'POST':
+		user = { 'name': request.form['username'],
+				 'password': request.form['password'] }
+		if db.users.find_one(user):
+			session['logged_in'] = True
+			session['user'] = user['name']
+			return redirect(url_for('show_entries'))
+		else:
+			session['logged_in'] = False
+			error = 'Bad username or password'
+			return render_template('login.html', error=error)
+	return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+	session.pop('logged_in', None)
+	return redirect(url_for('show_entries'))
 
 entry_1 = { "url" : "http://blog.devep.net/virushuo/2013/03/19/googlereader.html",
             "title" : "Google的社会化梦想与Reader".decode("utf8"),
