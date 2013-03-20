@@ -1,6 +1,6 @@
 # -*- coding=UTF-8 -*-
 from flask import Flask, request, session, g, redirect, abort, render_template, url_for
-from pymongo import Connection
+from pymongo import Connection, DESCENDING
 
 # configuration
 SECRET_KEY = '42af733dc674b992787a9806ce32a4b5'
@@ -21,9 +21,16 @@ def teardown_request(exception):
 @app.route('/')
 def show_entries():
 	db = g.conn.fhn
+	#按 points 倒排，以表示受欢迎程度
+	entries = db.urls.find().sort('points', DESCENDING).limit(32)
+	return render_template('index.html', entries=enumerate(entries, start=1))
+
+@app.route('/newest')
+def show_entries():
+	db = g.conn.fhn
 	#这个查询得修改完善
-	entries = [ e for e in db.urls.find().limit(50)]
-	return render_template('index.html', entries=enumerate(entries))
+	entries = [ e for e in db.urls.find().limit(32)]
+	return render_template('index.html', entries=enumerate(entries, start=1))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -8,11 +8,11 @@
 
 <body>
 	<h1><a href="/">Fake Hacker News</a></h1>
+	<h1> {{ shit }}  000</h1>
 	<table border="0">
 		<tr>
 			<td><a href="newest">Newest</a></td>
 			{% if session.logged_in %}
-			<td><a href={{ "threads/?id=%s" % (session['user']) }}>Thread</a></td>
 			<td><a href="submit">Submit</a></td>
 			<td><a href="logout">Logout</a></td>
 			{% else %}
@@ -25,8 +25,12 @@
 		{% for (seqno, entry) in entries %}
 		<tr>
 			<td>{{ seqno }}</td>
+			{% if entry['submitter'] == session['user'] %}
+			<td> * </td>
+			{% else %}
 			<td><img src="static/uparrow.jpg" /></td>
-			<td><a href= {{ entry['url'] }}>{{ entry['title'] }}</a> <br></td>
+			{% endif %}
+			<td>{{ entry['points'] }} points <a href= {{ entry['url'] }} > {{ entry['title'] }}</a> <br></td>
 		</tr>
 		{% endfor %}
 	</table>
