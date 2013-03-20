@@ -38,7 +38,7 @@ def login():
 			return redirect(url_for('show_entries'))
 		else:
 			session['logged_in'] = False
-			error = 'Bad username or password'
+			error = '用户名或密码不正确'.decode('utf8')
 			return render_template('login.html', error=error)
 	return render_template('login.html', error=error)
 
@@ -46,6 +46,29 @@ def login():
 def logout():
 	session.pop('logged_in', None)
 	return redirect(url_for('show_entries'))
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+	db = g.conn.fhn
+	error = ''
+	if request.method == 'POST':
+		if db.users.find_one({'name': request.form['username']}):
+			error = '用户已经存在。'.decode('utf8')
+		if request.form['password'] != request.form['confirm_password']:
+			error += '密码不一致'.decode('utf8')
+
+		if error:
+			return render_template('signup.html', error=error)
+		else:
+			user = { 'name': request.form['username'],
+					 'password': request.form['password'] }
+			db.users.insert(user)
+			session['logged_in'] = True
+			session['user'] = user['name']
+			return redirect(url_for('show_entries'))
+	else: # GET
+		return render_template('signup.html', error=error)
+
 
 #用于用户添加一条 news
 @app.route('/submit', methods=['GET', 'POST'])
@@ -55,7 +78,7 @@ def submit():
 		return render_template('submit.html', error=error)
 	else: # POST
 		db = g.conn.fhn
-		if db.urls.find_one(request.form['url']):
+		if db.urls.find_one({'url': request.form['url']}):
 			error = '抱歉，已经有别人提交过此 URL。'.decode('utf8')
 			return render_template('submit.html', error=error)
 		else:
