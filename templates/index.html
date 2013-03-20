@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" >
+	<meta charset="utf-8">
+	<title>Fake Hacker News</title>
+</head>
+
+<body>
+	<h1><a href="/">Fake Hacker News</a></h1>
+	<table border="0">
+		<tr>
+			<td><a href="newest">Newest</a></td>
+			{% if session.logged_in %}
+			<td><a href={{ "threads/?id=%s" % (session['user']) }}>Thread</a></td>
+			<td><a href="submit">Submit</a></td>
+			<td><a href="logout">Logout</a></td>
+			{% else %}
+			<td><a href="login">Login</a></td>
+			{% endif %}
+		</tr>
+	
+		{# 还很不完善 #}
+		{% for (seqno, entry) in entries %}
+		<tr>
+			<td>{{ seqno }}</td>
+			<td><img src="static/uparrow.jpg" /></td>
+			<td><a href= {{ entry['url'] }}>{{ entry['title'] }}</a> <br></td>
+		</tr>
+		{% endfor %}
+	</table>
+</body>
+</html>
