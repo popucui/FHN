@@ -8,18 +8,18 @@
 
 			<body>
 				<h1><a href="/">Fake Hacker News</a></h1>
-				<h2> Login </h2>
+				<h2> Submit </h2>
 				{% if error %}
 				<h3>{{ error }} </h3>
 				{% endif %}
 
-				<form action="{{ url_for('login') }}" method=post>
+				<form action="{{ url_for('submit') }}" method=post>
 					<dl>
-						<dt>Username:</dt>
-							<dd><input type="text" name="username">
-						<dt>Password:</dt>
-							<dd><input type="password" name="password">
-						<dd><input type="submit" value="Login">
+						<dt>URL:</dt>
+							<dd><input type="text" name="url">
+						<dt>Title:</dt>
+							<dd><input type="text" name="title">
+						<dd><input type="submit" value="Submit">
 					</dl>
 				</form>
 			</body>

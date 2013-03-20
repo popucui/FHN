@@ -47,6 +47,27 @@ def logout():
 	session.pop('logged_in', None)
 	return redirect(url_for('show_entries'))
 
+#用于用户添加一条 news
+@app.route('/submit', methods=['GET', 'POST'])
+def submit():
+	error = None
+	if request.method == 'GET':
+		return render_template('submit.html', error=error)
+	else: # POST
+		db = g.conn.fhn
+		if db.urls.find_one(request.form['url']):
+			error = '抱歉，已经有别人提交过此 URL。'.decode('utf8')
+			return render_template('submit.html', error=error)
+		else:
+			url = { 'url': request.form['url'],
+					'title': request.form['title'],
+					'submitter': session['user'],
+					'upvoters': [ session['user'] ],
+					'downvoters': [ ],
+					'points': 1 }
+			db.urls.insert(url)
+			return redirect(url_for('show_entries'))
+
 entry_1 = { "url" : "http://blog.devep.net/virushuo/2013/03/19/googlereader.html",
             "title" : "Google的社会化梦想与Reader".decode("utf8"),
             "submitter" : "yfaming",
