@@ -1,6 +1,7 @@
 # -*- coding=UTF-8 -*-
 from flask import Flask, request, session, g, redirect, abort, render_template, url_for
 from pymongo import Connection, DESCENDING
+from bson.objectid import ObjectId
 
 # configuration
 SECRET_KEY = '42af733dc674b992787a9806ce32a4b5'
@@ -24,6 +25,21 @@ def show_entries():
 	#按 points 倒排，以表示受欢迎程度
 	entries = list(db.urls.find().sort('points', DESCENDING).limit(32))
 	return render_template('index.html', entries=enumerate(entries, start=1))
+
+@app.route('/vote')
+def vote():
+	if not session.get('logged_in', False):
+		return redirect(url_for('login'))
+	elif request.args.get('dir') == 'up':
+		db = g.conn.fhn
+		urlid = request.args.get('urlid')
+		#以下这段代码无法保证数据库操作的原子性，可能导致 points 与实际不符
+		entry = db.urls.find_one({'_id': ObjectId(urlid)})
+		if session['user'] not in entry['upvoters'] and not session['user'] == entry['submitter']:
+			db.urls.update({'_id': ObjectId(urlid)}, {'$push': {'upvoters': session['user']}, '$inc': {'points': 1}})
+	
+	return redirect(url_for('show_entries'))
+
 
 @app.route('/newest')
 def show_newest():
@@ -54,6 +70,7 @@ def login():
 @app.route('/logout')
 def logout():
 	session.pop('logged_in', None)
+	session.pop('user', None)
 	return redirect(url_for('show_entries'))
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -94,7 +111,7 @@ def submit():
 			url = { 'url': request.form['url'],
 					'title': request.form['title'],
 					'submitter': session['user'],
-					'upvoters': [ session['user'] ],
+					'upvoters': [ session['user'] ], #默认当你提交一条 url 时，便投了它一票
 					'downvoters': [ ],
 					'points': 1 }
 			db.urls.insert(url)

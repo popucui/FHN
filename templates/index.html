@@ -26,8 +26,10 @@
 			<td>{{ seqno }}</td>
 			{% if entry['submitter'] == session['user'] %}
 			<td> * </td>
+			{% elif session['user'] in entry['upvoters'] %}
+			<td></td>
 			{% else %}
-			<td><img src="static/uparrow.jpg" /></td>
+			<td><a href="vote?urlid={{entry['_id']}}&dir=up"><img src="static/uparrow.jpg" /></a></td>
 			{% endif %}
 			<td>{{ entry['points'] }} points <a href= {{ entry['url'] }} > {{ entry['title'] }}</a> <br></td>
 		</tr>
