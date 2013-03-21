@@ -29,7 +29,9 @@ def show_entries():
 def show_newest():
 	db = g.conn.fhn
 	#这个查询得修改完善
-	entries = [ e for e in db.urls.find().limit(32)]
+	entries = [ e for e in db.urls.find()]
+	entries.sort(key = lambda e: e['_id'].generation_time, reverse=True)
+	entries = entries[:32]
 	return render_template('index.html', entries=enumerate(entries, start=1))
 
 @app.route('/login', methods=['GET', 'POST'])
