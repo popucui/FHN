@@ -7,31 +7,27 @@
 </head>
 
 <body>
-	<h1><a href="/">Fake Hacker News</a></h1>
-	<table border="0">
-		<tr>
-			<td><a href="newest">Newest</a></td>
-			{% if session.logged_in %}
-			<td><a href="submit">Submit</a></td>
-			<td><a href="logout">Logout</a></td>
-			{% else %}
-			<td><a href="login">Login</a></td>
-			<td><a href="signup">Signup</a></td>
-			{% endif %}
-		</tr>
+<table border="0" >		
+	<p class="nav"><a href="/"><b>Fake Hacker News</b></a> <a href="newest" style="padding-left:10px">New</a>
+	{% if session.logged_in %}
+	<a href="submit" style="padding-left:10px">Submit</a>
+	<span class="nav_right"><span>{{ session['user'] }} | </span><a href="logout">Logout</a></span>
+	{% else %}
+	<span class="nav_right"><a href="login">Login</a><a href="signup" style="padding-left: 10px">Signup</a></span>
+	{% endif %}
+
 	
-		{# 还很不完善 #}
 		{% for (seqno, entry) in entries %}
 		<tr>
-			<td>{{ seqno }}</td>
+			<td style="text-align:right; width:4pt"><span >{{ seqno }}.</span></td>
 			{% if entry['submitter'] == session['user'] %}
-			<td> * </td>
+			<td style="width:4pt"> * </td>
 			{% elif session['user'] in entry['upvoters'] %}
-			<td></td>
+			<td style="width:4pt"></td>
 			{% else %}
-			<td><a href="vote?urlid={{entry['_id']}}&dir=up"><img src="static/uparrow.jpg" /></a></td>
+			<td style="width:4pt"><a href="vote?urlid={{entry['_id']}}&dir=up"><img src="static/uparrow.gif" /></a><br><br></td>
 			{% endif %}
-			<td>{{ entry['points'] }} points <a href= {{ entry['url'] }} > {{ entry['title'] }}</a> <br></td>
+			<td><a href= {{ entry['url'] }} > {{ entry['title'] }}</a> <br><span class="subtext">{{ entry['points'] }} points by {{ entry['submitter']}} </span></td>
 		</tr>
 		{% endfor %}
 	</table>

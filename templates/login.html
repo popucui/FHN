@@ -2,25 +2,25 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}" >
-		<meta charset="utf-8">
-			<title>Fake Hacker News</title>
-			</head>
+	<meta charset="utf-8">
+	<title>Fake Hacker News</title>
+</head>
 
-			<body>
-				<h1><a href="/">Fake Hacker News</a></h1>
-				<h2> Login </h2>
-				{% if error %}
-				<h3>{{ error }} </h3>
-				{% endif %}
+	<body>
+		<p class="nav"> <a href="/"><b>Fake Hacker News</b></a>
+		<p>Login(or <a href="signup">Signup</a>)</p>
+		{% if error %}
+		<h3>{{ error }} </h3>
+		{% endif %}
 
-				<form action="{{ url_for('login') }}" method=post>
-					<dl>
-						<dt>Username:</dt>
-							<dd><input type="text" name="username">
-						<dt>Password:</dt>
-							<dd><input type="password" name="password">
-						<dd><input type="submit" value="Login">
-					</dl>
-				</form>
-			</body>
+		<form action="{{ url_for('login') }}" method=post>
+			<dl>
+			<dt>Username:</dt>
+				<dd><input type="text" name="username">
+			<dt>Password:</dt>
+				<dd><input type="password" name="password">
+			<dd><input type="submit" value="Login">
+			</dl>
+		</form>
+	</body>
 </head>
