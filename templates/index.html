@@ -27,7 +27,7 @@
 			{% else %}
 			<td style="width:4pt"><a href="vote?urlid={{entry['_id']}}&dir=up"><img src="static/uparrow.gif" /></a><br><br></td>
 			{% endif %}
-			<td><a href= {{ entry['url'] }} > {{ entry['title'] }}</a> <br><span class="subtext">{{ entry['points'] }} points by {{ entry['submitter']}} </span></td>
+			<td><a href= {{ entry['url'] }} target="_blank" > {{ entry['title'] }}</a> <br><span class="subtext">{{ entry['points'] }} points by {{ entry['submitter']}} </span></td>
 		</tr>
 		{% endfor %}
 	</table>
