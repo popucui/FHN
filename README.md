@@ -1,4 +1,4 @@
 FHN
 ===
 
-[Fake-HN](fhn.yfaming.me)
+[Fake-HN](http://fhn.yfaming.me)
