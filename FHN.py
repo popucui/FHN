@@ -44,7 +44,6 @@ def vote():
 @app.route('/newest')
 def show_newest():
 	db = g.conn.fhn
-	#这个查询得修改完善
 	entries = [ e for e in db.urls.find()]
 	entries.sort(key = lambda e: e['_id'].generation_time, reverse=True)
 	entries = entries[:32]
@@ -104,7 +103,10 @@ def submit():
 		return render_template('submit.html', error=error)
 	else: # POST
 		db = g.conn.fhn
-		if db.urls.find_one({'url': request.form['url']}):
+		if request.form['url'] == '' or request.form['title'] == '':
+			error = 'URL 和 Title 都不能为空。'.decode('utf8')
+			return render_template('submit.html', error=error)
+		elif db.urls.find_one({'url': request.form['url']}):
 			error = '抱歉，已经有别人提交过此 URL。'.decode('utf8')
 			return render_template('submit.html', error=error)
 		else:
@@ -115,7 +117,7 @@ def submit():
 					'downvoters': [ ],
 					'points': 1 }
 			db.urls.insert(url)
-			return redirect(url_for('newest'))
+			return redirect(url_for('show_newest'))
 
 # MongoDB 数据库为 fhn，有两个 collection，users 和 urls。
 # urls 里的文档暂定这样：
