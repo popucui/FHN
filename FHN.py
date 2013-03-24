@@ -115,7 +115,7 @@ def submit():
 					'downvoters': [ ],
 					'points': 1 }
 			db.urls.insert(url)
-			return redirect(url_for('show_entries'))
+			return redirect(url_for('newest'))
 
 # MongoDB 数据库为 fhn，有两个 collection，users 和 urls。
 # urls 里的文档暂定这样：
