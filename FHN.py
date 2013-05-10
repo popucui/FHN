@@ -1,7 +1,12 @@
 # -*- coding=UTF-8 -*-
 from flask import Flask, request, session, g, redirect, abort, render_template, url_for
+
+#from flaskext.babel import lazy_gettext, ngettext
+
 from pymongo import Connection, DESCENDING
 from bson.objectid import ObjectId
+from datetime import datetime
+import urlparse
 
 # configuration
 SECRET_KEY = '42af733dc674b992787a9806ce32a4b5'
@@ -19,9 +24,54 @@ def teardown_request(exception):
 	if hasattr(g, 'conn'):
 		g.conn.close()
 
+def domain(url):
+	"""
+	Return the domain of a URL e.g. http://www.google.com.hk > google.com.hk
+	"""
+	rv = urlparse.urlparse(url).netloc
+	if rv.startswith("www."):
+		rv = rv[4:]
+	return rv
+
+def timesince(dt, default=None):
+	"""
+	Return the string representation "time since" e.g. 5 days ago, 8 hours ago etc.
+	"""
+	if default is None:
+		default = u"just now"
+
+	now = datetime.utcnow()
+	diff = now - dt
+
+	periods = (
+		(diff.days / 365, "year", "years"),
+		(diff.days / 30, "month", "months"),
+		(diff.days / 7, "week", "weeks"),
+		(diff.days, "day", "days"),
+		(diff.seconds / 3600, "hour", "hours"),
+		(diff.seconds / 60,  "minute", "minutes"),
+		(diff.seconds, "second", "seconds"),
+	)
+
+	for period, singular, plural in periods:
+		if not period:
+			continue
+		
+		if period > 1:
+			return u'%d %s ago' % (period, plural)
+		else:
+			return u'%d %s ago' % (period, singular)
+	return default
 @app.route('/')
 def show_entries():
 	db = g.conn.fhn
+
+
+	entries = [ e for e in db.urls.find()]
+	for entry in entries:
+		entry['life'] = timesince(entry['submit_time'])
+		db.urls.save(entry)
+
 	#按 points 倒排，以表示受欢迎程度
 	entries = list(db.urls.find().sort('points', DESCENDING).limit(32))
 	return render_template('index.html', entries=enumerate(entries, start=1))
@@ -110,12 +160,15 @@ def submit():
 			error = '抱歉，已经有别人提交过此 URL。'.decode('utf8')
 			return render_template('submit.html', error=error)
 		else:
-			url = { 'url': request.form['url'],
+			url = { 
+					'url': request.form['url'],
 					'title': request.form['title'],
 					'submitter': session['user'],
 					'upvoters': [ session['user'] ], #默认当你提交一条 url 时，便投了它一票
 					'downvoters': [ ],
-					'points': 1 }
+					'points': 1,
+					'submit_time': datetime.utcnow(),
+					'domain': domain(request.form['url'])}
 			db.urls.insert(url)
 			return redirect(url_for('show_newest'))
 
