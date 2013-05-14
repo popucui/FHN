@@ -26,7 +26,7 @@ def teardown_request(exception):
 
 def domain(url):
 	"""
-	Return the domain of a URL e.g. http://www.google.com.hk > google.com.hk
+	Return the domain of a URL e.g. http://www.google.com.hk => google.com.hk
 	"""
 	rv = urlparse.urlparse(url).netloc
 	if rv.startswith("www."):
@@ -39,7 +39,7 @@ def timesince(dt, default=None):
 	"""
 	if default is None:
 		default = u"just now"
-
+	
 	now = datetime.utcnow()
 	diff = now - dt
 
@@ -62,18 +62,20 @@ def timesince(dt, default=None):
 		else:
 			return u'%d %s ago' % (period, singular)
 	return default
+
 @app.route('/')
 def show_entries():
 	db = g.conn.fhn
 
-
 	entries = [ e for e in db.urls.find()]
 	for entry in entries:
-		entry['life'] = timesince(entry['submit_time'])
-		db.urls.save(entry)
+		# cannot do this, generation_time of ObjectId is timezone aware
+		#entry['life'] = timesince(entry['submit_time'])
+		entry['life'] = timesince(entry['_id'].generation_time.replace(tzinfo=None))
+		entry['domain'] = domain(entry['url'])
 
 	#按 points 倒排，以表示受欢迎程度
-	entries = list(db.urls.find().sort('points', DESCENDING).limit(32))
+	entries.sort(key = lambda e: e['points'], reverse=True)
 	return render_template('index.html', entries=enumerate(entries, start=1))
 
 @app.route('/vote')
@@ -97,6 +99,12 @@ def show_newest():
 	entries = [ e for e in db.urls.find()]
 	entries.sort(key = lambda e: e['_id'].generation_time, reverse=True)
 	entries = entries[:32]
+	for entry in entries:
+		# cannot do this, generation_time of ObjectId is timezone aware
+		#entry['life'] = timesince(entry['submit_time'])
+		entry['life'] = timesince(entry['_id'].generation_time.replace(tzinfo=None))
+		entry['domain'] = domain(entry['url'])
+	
 	return render_template('index.html', entries=enumerate(entries, start=1))
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -165,16 +173,14 @@ def submit():
 					'title': request.form['title'],
 					'submitter': session['user'],
 					'upvoters': [ session['user'] ], #默认当你提交一条 url 时，便投了它一票
-					'downvoters': [ ],
+					'downvoters': [],
 					'points': 1,
-					'submit_time': datetime.utcnow(),
-					'domain': domain(request.form['url'])}
+				  }
 			db.urls.insert(url)
 			return redirect(url_for('show_newest'))
 
 # MongoDB 数据库为 fhn，有两个 collection，users 和 urls。
 # urls 里的文档暂定这样：
-# 看来需要加上 submit_time 字段。
 entry_1 = { "url" : "http://blog.devep.net/virushuo/2013/03/19/googlereader.html",
             "title" : "Google的社会化梦想与Reader".decode("utf8"),
             "submitter" : "yfaming",
